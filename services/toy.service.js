@@ -24,43 +24,45 @@ export const toyService = {
     getLabelsCount
 }
 
-function query(filterBy = {}) {
+function query(filterBy = {}, sortBy = {}, pageIdx = 0) {
     let filteredToys = toys
-    // console.log('toys:', toys);
-    // console.log('filter inside wuery:', filterBy);
     
     if (filterBy.txt) {
         const regExp = new RegExp(filterBy.txt, 'i')
         filteredToys = filteredToys.filter(toy => regExp.test(toy.name))
     }
-    // if (filterBy.inStock) {
-    //     filteredToys = filteredToys.filter(
-    //         toy => toy.inStock === JSON.parse(filterBy.inStock)
-    //     )
-    // }
-    // if (filterBy.labels && filterBy.labels.length) {
-    //     filteredToys = filteredToys.filter(
-    //         toy => filterBy.labels.every(label => toy.labels.includes(label))
-    //         // filterBy.labels.some(label => toy.labels.includes(label))
-    //     )
-    // }
-    // if (sortBy.type) {
-    //     filteredToys.sort((toy1, toy2) => {
-    //         const sortDirection = +sortBy.desc
-    //         if (sortBy.type === 'name') {
-    //             return toy1.name.localeCompare(toy2.name) * sortDirection
-
-    //         } else if (sortBy.type === 'price' || sortBy.type === 'createdAt') {
-    //             return (toy1[sortBy.type] - toy2[sortBy.type]) * sortDirection
-    //         }
-
-    //     })
-    // }
-    // if (pageIdx !== undefined) {
-    //     let startIdx = pageIdx * PAGE_SIZE
-    //     filteredToys = filteredToys.slice(startIdx, startIdx + PAGE_SIZE)
-    // }
-    return Promise.resolve(filteredToys)
+    
+    if (filterBy.inStock !== undefined && filterBy.inStock !== null) {
+        filteredToys = filteredToys.filter(toy => toy.inStock === filterBy.inStock)
+    }
+    
+    if (filterBy.labels && filterBy.labels.length > 0) {
+        filteredToys = filteredToys.filter(toy => {
+            return filterBy.labels.every(label => toy.labels.includes(label))
+        })
+    }
+    
+    if (sortBy.type) {
+        filteredToys.sort((t1, t2) => {
+            const sortDirection = sortBy.desc ? -1 : 1
+            if (sortBy.type === 'name') {
+                return t1.name.localeCompare(t2.name) * sortDirection
+            } else if (sortBy.type === 'price') {
+                return (t1.price - t2.price) * sortDirection
+            } else if (sortBy.type === 'created') {
+                return (t1.createdAt - t2.createdAt) * sortDirection
+            }
+        })
+    }
+    
+    const totalPages = Math.ceil(filteredToys.length / PAGE_SIZE)
+    
+    if (pageIdx !== undefined) {
+        let startIdx = pageIdx * PAGE_SIZE
+        filteredToys = filteredToys.slice(startIdx, startIdx + PAGE_SIZE)
+    }
+    
+    return Promise.resolve({ toys: filteredToys, totalPages })
 }
 
 function get(toyId) {

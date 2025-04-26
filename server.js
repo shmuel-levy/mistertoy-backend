@@ -31,11 +31,16 @@ if (process.env.NODE_ENV === 'production') {
 
 // **************** Toys API ****************:
 app.get('/api/toy', (req, res) => {
-    const filterBy = req.query
-    // console.log('filterBy:',filterBy);
-
-    toyService.query(filterBy)
-        .then(toys => res.send(toys))
+    const { filterBy = {}, sortBy = {}, pageIdx = 0 } = req.query
+    
+    // Parse pageIdx to number
+    const parsedPageIdx = parseInt(pageIdx, 10) || 0
+    
+    toyService.query(filterBy, sortBy, parsedPageIdx)
+        .then(result => {
+            // Result now contains { toys, totalPages }
+            res.send(result)
+        })
         .catch(err => {
             loggerService.error('Cannot load toys', err)
             res.status(400).send('Cannot load toys')
