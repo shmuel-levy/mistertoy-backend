@@ -29,23 +29,26 @@ if (process.env.NODE_ENV === 'production') {
     app.use(cors(corsOptions))
 }
 
-// **************** Toys API ****************:
 app.get('/api/toy', (req, res) => {
-    const { filterBy = {}, sortBy = {}, pageIdx = 0 } = req.query
-    
-    // Parse pageIdx to number
-    const parsedPageIdx = parseInt(pageIdx, 10) || 0
-    
-    toyService.query(filterBy, sortBy, parsedPageIdx)
-        .then(result => {
-            // Result now contains { toys, totalPages }
-            res.send(result)
-        })
-        .catch(err => {
-            loggerService.error('Cannot load toys', err)
-            res.status(400).send('Cannot load toys')
-        })
-})
+    try {
+        // Parse the filterBy, sortBy, and pageIdx from query parameters
+        const filterBy = req.query.filterBy ? JSON.parse(req.query.filterBy) : {};
+        const sortBy = req.query.sortBy ? JSON.parse(req.query.sortBy) : {};
+        const pageIdx = parseInt(req.query.pageIdx) || 0;
+        
+        toyService.query(filterBy, sortBy, pageIdx)
+            .then(result => {
+                res.send(result);
+            })
+            .catch(err => {
+                loggerService.error('Cannot load toys', err);
+                res.status(400).send('Cannot load toys');
+            });
+    } catch (err) {
+        loggerService.error('Failed to parse query parameters', err);
+        res.status(400).send('Invalid query parameters');
+    }
+});
 
 app.get('/api/toy/labels', (req, res) => {
     return toyService.getLabels()
