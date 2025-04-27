@@ -1,20 +1,5 @@
 [
     {
-        "name": "Shmuelsadsad",
-        "price": 2112412,
-        "labels": [
-            "Outdoor",
-            "Battery Powered",
-            "Box game",
-            "Baby",
-            "Doll",
-            "Puzzle"
-        ],
-        "_id": "srf4U",
-        "createdAt": 1745747546810,
-        "inStock": true
-    },
-    {
         "_id": "t115",
         "name": "Glow-in-the-Dark Stars",
         "price": 15,
