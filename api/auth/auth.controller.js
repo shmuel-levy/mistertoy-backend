@@ -3,20 +3,21 @@ import { authService } from './auth.service.js'
 
 export async function login(req, res) {
     const { username, password } = req.body
+    console.log('Login attempt:', { username, password }) 
+    
     try {
         const user = await authService.login(username, password)
         const loginToken = authService.getLoginToken(user)
-
-        loggerService.info('User login: ', user)
+        
+        console.log('Login successful for:', username)
         res.cookie('loginToken', loginToken)
-
+        
         res.json(user)
     } catch (err) {
-        loggerService.error('Failed to Login ' + err)
+        console.error('Login failed:', err.message)
         res.status(401).send({ err: 'Failed to Login' })
     }
 }
-
 export async function signup(req, res) {
     try {
         const { username, password, fullname } = req.body
