@@ -3,19 +3,38 @@ import { toyService } from './toy.service.js'
 
 export async function getToys(req, res) {
     try {
-        const filterBy = {
-            txt: req.query.txt || '',
-            inStock: req.query.inStock,
-            labels: req.query.labels || [],
-            pageIdx: +req.query.pageIdx || 0,
-            sortBy: req.query.sortBy ? JSON.parse(req.query.sortBy) : {}
+        // Log the raw parameters
+        console.log("Raw query params:", req.query);
+        
+        // Parse the filterBy JSON string
+        let filterBy = {};
+        if (req.query.filterBy) {
+            try {
+                filterBy = JSON.parse(req.query.filterBy);
+            } catch (err) {
+                console.error("Error parsing filterBy:", err);
+            }
         }
         
-        const toys = await toyService.query(filterBy)
-        res.send(toys)
+        // Add pageIdx (sent separately)
+        filterBy.pageIdx = +req.query.pageIdx || 0;
+        
+        // Parse sortBy if it exists
+        if (req.query.sortBy) {
+            try {
+                filterBy.sortBy = JSON.parse(req.query.sortBy);
+            } catch (err) {
+                console.error("Error parsing sortBy:", err);
+            }
+        }
+        
+        console.log("Processed filterBy:", filterBy);
+        
+        const toys = await toyService.query(filterBy);
+        res.send(toys);
     } catch (err) {
-        loggerService.error('Cannot load toys', err)
-        res.status(500).send({ err: 'Cannot load toys' })
+        loggerService.error('Cannot load toys', err);
+        res.status(500).send({ err: 'Cannot load toys' });
     }
 }
 
